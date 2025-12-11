@@ -6,9 +6,10 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from src.model import NeuralNetwork
+from src.model import MLP
 from src.test import compute_average
 from src.train import train_network
+import src.utils as util
 
 
 
@@ -26,22 +27,19 @@ training_data = datasets.MNIST(root='./data',
                                train=True,
                                download=True,
                                transform=transforms.ToTensor(),
-                               target_transform=transforms.Lambda(
-                                   lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor([y]),
-                                                                                         1.0)))
+                               target_transform=util.OneHotTransform(num_classes=10))
 test_data = datasets.MNIST(root='./data',
                            train=False,
                            download=True,
                            transform=transforms.ToTensor(),
-                           target_transform=transforms.Lambda(
-                               lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor([y]), 1.0)))
+                           target_transform=util.OneHotTransform(num_classes=10))
 train_loader = DataLoader(training_data, batch_size=150, shuffle=True, num_workers=4)
 test_loader = DataLoader(test_data, batch_size=100, shuffle=False, num_workers=4)
 
 torch.set_num_threads(4)
 
 # Create instance of NeuralNetwork model
-model = NeuralNetwork().to(device)
+model = MLP([784, 128, 128, 10], [nn.ReLU(), None]).to(device)
 
 
 if __name__ == '__main__':
